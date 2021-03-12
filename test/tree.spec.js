@@ -523,4 +523,39 @@ describe('Tree Functions', () => {
     await walkAsyncTest
     expect(tree.a.b.c.length).to.equal(4)
   })
+  it('mapTreeLeaves', () => {
+    let tree = { a: { b: { c: [1, 2, 3] } } }
+    let double = x => x * 2
+    let result = F.mapTreeLeaves()(double, tree)
+    expect(tree).to.deep.equal({ a: { b: { c: [1, 2, 3] } } })
+    expect(result).to.deep.equal({ a: { b: { c: [2, 4, 6] } } })
+  })
+  it('mapTreeLeaves contexture tree', () => {
+    let tree = {
+      key: 'root',
+      children: [
+        { key: 'criteria', children: [{ key: 'filter' }, { key: 'f2' }] },
+        { key: 'analysis', children: [{ key: 'results' }] },
+      ],
+    }
+    let getChildren = x => x.children
+    let writeChild = (node, index, [parent]) => {
+      parent.children[index] = node
+    }
+    let mapLeaves = F.mapTreeLeaves(getChildren, writeChild)
+    let result = mapLeaves(node => ({ ...node, value: 'test' }), tree)
+    expect(result).to.deep.equal({
+      key: 'root',
+      children: [
+        {
+          key: 'criteria',
+          children: [
+            { key: 'filter', value: 'test' },
+            { key: 'f2', value: 'test' },
+          ],
+        },
+        { key: 'analysis', children: [{ key: 'results', value: 'test' }] },
+      ],
+    })
+  })
 })
